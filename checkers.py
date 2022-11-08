@@ -4,7 +4,6 @@ import os
 import copy
 
 
-
 SOUTH_EAST=[1,1]
 SOUTH_WEST=[-1,1]
 
@@ -151,17 +150,17 @@ class Board:
                 piece.both_directions(valid)
                 validMoves.append((rows+1,cols+1))
                 validMoves.append((rows+1,cols-1))
-
-                print(validMoves[0],validMoves[1])
                 
 
             elif self.board[rows+1][cols+1]==0 and self.board[rows+1][cols-1]!=0:
                 piece.draw_directions_right(valid)
                 validMoves.append((rows+1,cols+1))
+
             
             elif self.board[rows+1][cols+1]!=0 and self.board[rows+1][cols-1]==0:
                 piece.draw_directions_left(valid)
-                validMoves.append((rows+1,cols+1))
+                validMoves.append((rows+1,cols-1))
+
 
         except:
             rows*100+100>=ScreenHeight or cols*100+100>=ScreenWidth
@@ -169,15 +168,18 @@ class Board:
             if cols*100+100>=ScreenWidth:
                 piece.draw_directions_left(valid)
 
-                validMoves.append((rows+1,cols+1))
+                validMoves.append((rows+1,cols-1))
+
         return validMoves
+
 
     
     def move(self,piece,rows,cols):
         moved=False
 
+        print(self.board[2][1])
+
         try:
-            
             self.board[piece.row][piece.col], self.board[rows][cols] = self.board[rows][cols], self.board[piece.row][piece.col]
 
             piece.move(rows, cols)
@@ -191,10 +193,8 @@ class Board:
         return moved
 
 
-
     def selectPlace(self,piece,x,y):
         self.move(piece,x,y)
-            
 
     def boardGUI(self):
         color=(255,255,255)
@@ -236,6 +236,7 @@ class Game:
         self.board=Board()
         self.turn=Red
         self.valid_moves={}
+        self.moved=True
         
     def update(self):
         self.board.draw()
@@ -244,7 +245,7 @@ class Game:
     def reset(self):
         self.selected=None
 
-    def select(self,row,col):
+    def select(self,row,col,boling):
         if self.selected:
             result=self.move(row,col)
             if not result:
@@ -260,28 +261,34 @@ class Game:
         
 
     def move(self,row,col):
+        val=1
         piece=self.board.get_piece(row,col)
         if self.selected and piece==0 and (row,col) in self.valid_moves:
             self.board.move(self.selected,row,col)
          
         else:
+            self.moved=False
             return False
+        self.moved=True
+        val*=-1
+        self.switch_turn(val)
         return True
 
-    def change_turn(self):
-        if self.turn==Red:
+    def switch_turn(self,value):
+        if value==-1:
             self.turn=White
         else:
             self.turn=Red
         
-         
+        
+
+
         
 clock.tick(60)
 board=Board()
 board.boardGUI()
 board.draw_pieces()
 game=Game()
-
 
 clicked=-1
 
@@ -300,10 +307,9 @@ while True:
             clicked*=-1
             piece=board.get_piece(y//grid,x//grid)
             first,second=y//grid,x//grid
-            #board.valid_moves(piece,first,second,clicked)
-            game.select(first,second)
+            game.select(first,second,clicked)
             game.move(first,second)
-
+            
 pygame.quit()
 
   
